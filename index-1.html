@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Glands Map | Interactive Learning</title>
+<style>
+:root{--ink:#17233b;--muted:#63718a;--paper:#f5f7fb;--card:#fff;--teal:#087f8c;--blue:#4263a5;--line:#dce3ee;--gold:#f2b84b}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button{font:inherit;cursor:pointer}.screen{min-height:100vh}.intro{display:grid;place-items:center;text-align:center;padding:32px;background:radial-gradient(circle at 50% 35%,#e4f5f4,#eef2fa 65%,#e6ebf5)}
+.intro-card{max-width:760px;background:#ffffffdf;border:1px solid #fff;border-radius:28px;padding:clamp(28px,6vw,64px);box-shadow:0 18px 55px #25395b18}
+.kicker{letter-spacing:.18em;text-transform:uppercase;font-size:.75rem;font-weight:700;color:var(--teal)}
+h1{font-size:clamp(2.5rem,7vw,5.2rem);line-height:.98;margin:18px 0;color:#172b49}
+.intro p{max-width:570px;margin:18px auto 28px;color:var(--muted);font-size:1.08rem;line-height:1.6}
+.primary{border:0;background:var(--teal);color:white;border-radius:999px;padding:14px 28px;font-weight:700;box-shadow:0 8px 20px #087f8c33}
+.primary:hover{background:#066a75}.hint{font-size:.82rem;color:var(--muted);margin-top:18px}
+.app{display:none;min-height:100vh}.topbar{background:#fff;border-bottom:1px solid var(--line);padding:14px clamp(16px,3vw,36px);display:flex;align-items:center;justify-content:space-between;gap:14px;position:sticky;top:0;z-index:5}
+.brand{font-weight:800;letter-spacing:.02em}.brand span{color:var(--teal)}.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.secondary{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 14px;font-weight:600}.secondary:hover{border-color:var(--teal);color:var(--teal)}
+.layout{max-width:1400px;margin:auto;padding:24px;display:grid;grid-template-columns:minmax(260px,310px) minmax(300px,1fr) minmax(270px,350px);gap:18px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 18px #17233b08}
+.panel h2{font-size:1.05rem;margin:0 0 12px}.sub{font-size:.85rem;color:var(--muted);line-height:1.45}
+.search{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin:12px 0 14px;font-size:.95rem}
+.group-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#8290a6;font-weight:800;margin:16px 0 7px}
+.gland-list{display:grid;gap:6px}.gland-btn{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:9px 10px;color:var(--ink)}
+.gland-btn:hover,.gland-btn.active{background:#eaf6f6;border-color:#c6e5e5}.num{display:grid;place-items:center;flex:0 0 27px;height:27px;border-radius:50%;background:#e8edf6;color:#344b73;font-weight:800;font-size:.8rem}.gland-btn.active .num{background:var(--teal);color:white}
+.map-panel{min-height:680px;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden}
+.map-head{width:100%;display:flex;justify-content:space-between;gap:10px;align-items:center}.map-head h2{margin:0}.view-switch{display:flex;background:#eef2f7;padding:4px;border-radius:999px;gap:3px}.view-switch button{border:0;background:transparent;border-radius:999px;padding:7px 12px;color:var(--muted);font-size:.82rem;font-weight:700}.view-switch button.active{background:#fff;color:var(--teal);box-shadow:0 2px 6px #17233b14}
+.map-note{font-size:.78rem;color:var(--muted);margin:10px 0 0;text-align:center}
+.figure{width:min(100%,500px);height:570px;position:relative;margin:10px auto 0}
+.figure svg{width:100%;height:100%;overflow:visible}
+.body-shape{fill:#edf1f6;stroke:#aab6c8;stroke-width:2.2}
+.gland-dot{fill:#0b8992;stroke:white;stroke-width:2.5;cursor:pointer;transition:r .15s,fill .15s}
+.gland-dot:hover,.gland-dot.selected{fill:#e49b25;stroke:#fff;stroke-width:3.5}
+.marker{position:absolute;transform:translate(-50%,-50%);border:2px solid white;background:var(--teal);color:white;border-radius:50%;width:27px;height:27px;font-size:.75rem;font-weight:800;box-shadow:0 2px 8px #17233b44;cursor:pointer}
+.marker:hover,.marker.selected{background:#e49b25;transform:translate(-50%,-50%) scale(1.18)}
+.detail-panel{min-height:380px}.detail-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}.detail-number{width:38px;height:38px;display:grid;place-items:center;background:#e7f4f4;color:var(--teal);font-weight:800;border-radius:12px}.detail-title{font-size:1.3rem;font-weight:800;margin:0}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef2f7;color:#4e607d;font-size:.75rem;font-weight:700;margin:2px 4px 8px 0}
+.detail-section{border-top:1px solid var(--line);padding:12px 0}.detail-section h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#74839b;margin:0 0 5px}.detail-section p{margin:0;line-height:1.55;font-size:.93rem}
+.empty{color:var(--muted);line-height:1.6;font-size:.95rem}.legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:6px 0 0;font-size:.78rem;color:var(--muted)}.legend span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--teal);margin-right:6px}.legend span:last-child:before{background:var(--gold)}
+.footer{text-align:center;color:#8792a5;font-size:.78rem;padding:12px 20px 28px}
+@media(max-width:1050px){.layout{grid-template-columns:260px minmax(280px,1fr)}.detail-panel{grid-column:1/-1}.map-panel{grid-column:2;grid-row:1/3}.list-panel{grid-column:1;grid-row:1}}
+@media(max-width:720px){.layout{display:flex;flex-direction:column;padding:12px}.panel{width:100%}.map-panel{order:1;min-height:620px}.list-panel{order:2}.detail-panel{order:3}.figure{height:510px;width:min(100%,390px)}.topbar{position:static}.topbar .brand{font-size:.9rem}.top-actions .secondary{padding:8px 10px;font-size:.8rem}}
+</style>
+</head>
+<body>
+<section class="screen intro" id="intro">
+ <div class="intro-card">
+  <div class="kicker">Interactive Science Learning Material</div>
+  <h1>The<br><span style="color:#087f8c">Glands</span> Map</h1>
+  <p>Explore the glands of the human body. Select a numbered marker or a gland name to discover its location, secretion, and function.</p>
+  <button class="primary" id="enter">Enter the Map&nbsp; →</button>
+  <div class="hint">Use the overview to return to the full-body map at any time.</div>
+ </div>
+</section>
+<section class="app" id="app">
+ <header class="topbar">
+  <div class="brand">THE <span>GLANDS</span> MAP</div>
+  <div class="top-actions"><button class="secondary" id="overview">Overview</button><button class="secondary" id="home">Title screen</button></div>
+ </header>
+ <main class="layout">
+  <aside class="panel list-panel">
+   <h2>Gland directory</h2>
+   <div class="sub">Choose a gland to view its information and highlight its approximate location.</div>
+   <input class="search" id="search" placeholder="Search glands…" aria-label="Search glands">
+   <div id="directory"></div>
+  </aside>
+  <section class="panel map-panel">
+   <div class="map-head"><h2>Human body map</h2>
+    <div class="view-switch" aria-label="Reproductive view">
+     <button class="active" data-view="female">Female</button><button data-view="male">Male</button>
+    </div>
+   </div>
+   <div class="figure" id="figure">
+    <svg viewBox="0 0 400 590" role="img" aria-label="Schematic front-facing human body outline with gland markers">
+     <g class="body-shape">
+      <circle cx="200" cy="55" r="35"/>
+      <path d="M165 94 Q145 96 130 112 L95 145 Q83 157 91 171 Q99 183 112 172 L145 142 L151 245 Q151 264 140 292 L119 375 Q115 392 130 397 Q145 402 151 385 L177 302 L185 420 L174 548 Q173 567 190 568 Q207 569 209 550 L218 422 L225 550 Q227 568 244 568 Q261 567 258 548 L247 420 L259 302 L285 385 Q291 402 306 397 Q321 392 315 375 L294 292 Q283 264 283 245 L289 142 L322 172 Q335 183 343 171 Q351 157 339 145 L305 112 Q290 96 270 94 Q250 87 235 88 L165 88Z"/>
+      <path d="M165 91 Q200 108 235 91" fill="none" stroke="#aab6c8" stroke-width="2"/>
+     </g>
+     <g id="glandLayer"></g>
+    </svg>
+   </div>
+   <div class="legend"><span>Gland marker</span><span style="--x:gold">Selected gland</span></div>
+   <p class="map-note">Schematic illustration. Marker positions are approximate and not to scale.</p>
+  </section>
+  <aside class="panel detail-panel" id="detail">
+   <h2>Gland information</h2><p class="empty">Select a marker on the body map or a gland from the directory to begin exploring.</p>
+  </aside>
+ </main>
+ <div class="footer">Learning material based on the provided Glands lesson slides.</div>
+</section>
+<script>
+const glands = [
+{id:"pituitary",name:"Pituitary gland",group:"Head and neck",kind:"Endocrine",x:200,y:65,views:["female","male"],location:"At the base of the brain, just below the hypothalamus.",secretion:"Several hormones, including growth hormone, prolactin, and hormones that control other endocrine glands.",function:"Often called the “master gland” because it helps regulate other glands. The lesson also connects it with puberty, breast development, and the start of menstruation."},
+{id:"pineal",name:"Pineal gland",group:"Head and neck",kind:"Endocrine",x:214,y:51,views:["female","male"],location:"Near the center of the brain.",secretion:"Melatonin.",function:"Helps regulate the sleep–wake cycle. Melatonin levels generally rise at night."},
+{id:"hypothalamus",name:"Hypothalamus",group:"Head and neck",kind:"Neuroendocrine control",x:188,y:48,views:["female","male"],location:"At the base of the brain, above the pituitary gland.",secretion:"Releasing and inhibiting hormones, including gonadotropin-releasing hormone (GnRH).",function:"Connects the nervous and endocrine systems and signals the pituitary when hormone release should occur. GnRH is involved in reproductive hormone regulation, including the menstrual cycle and ovulation."},
+{id:"thyroid",name:"Thyroid gland",group:"Head and neck",kind:"Endocrine",x:200,y:123,views:["female","male"],location:"Front of the neck, below the larynx; butterfly-shaped.",secretion:"Thyroid hormones (T3 and T4).",function:"Regulates metabolism, energy use, heart rate, body temperature, growth, and brain development."},
+{id:"parathyroid",name:"Parathyroid glands",group:"Head and neck",kind:"Endocrine",x:211,y:129,views:["female","male"],location:"Usually four tiny glands located on the back of the thyroid gland.",secretion:"Parathyroid hormone (PTH).",function:"Helps regulate calcium levels in the blood and bones, supporting normal nerve, muscle, and heart function."},
+{id:"salivary",name:"Salivary glands",group:"Head and neck",kind:"Exocrine",x:169,y:88,views:["female","male"],location:"Around the mouth and jaw: parotid, submandibular, and sublingual glands.",secretion:"Saliva, which contains substances such as the enzyme amylase.",function:"Moistens and lubricates food, helps swallowing, begins starch digestion, and protects the mouth."},
+{id:"thymus",name:"Thymus",group:"Chest",kind:"Endocrine",x:200,y:178,views:["female","male"],location:"In the upper chest, behind the breastbone (sternum).",secretion:"Thymic hormones, including thymosin.",function:"Supports the development and maturation of T lymphocytes (T cells), which are important in immune defense."},
+{id:"mammary",name:"Mammary glands",group:"Chest",kind:"Exocrine",x:171,y:205,views:["female"],location:"In the breasts.",secretion:"Milk, released through ducts to the nipple. Prolactin supports milk production; oxytocin causes milk ejection.",function:"Produce and release milk to nourish an infant during lactation."},
+{id:"adrenal",name:"Adrenal glands",group:"Abdomen",kind:"Endocrine",x:200,y:260,views:["female","male"],location:"One gland sits on top of each kidney.",secretion:"Adrenaline (epinephrine), cortisol, and aldosterone.",function:"Help coordinate the stress response, regulate metabolism, and maintain salt–water balance and blood pressure."},
+{id:"pancreas",name:"Pancreas",group:"Abdomen",kind:"Mixed: endocrine and exocrine",x:200,y:291,views:["female","male"],location:"In the upper abdomen, behind the stomach.",secretion:"Digestive enzymes through a duct; insulin and glucagon into the bloodstream.",function:"Digestive enzymes help break down food. Insulin and glucagon help regulate blood glucose levels."},
+{id:"liver",name:"Liver",group:"Abdomen",kind:"Exocrine secretion in digestion",x:163,y:270,views:["female","male"],location:"Upper right area of the abdomen.",secretion:"Bile, which travels through bile ducts.",function:"Bile helps with the digestion and absorption of fats. The lesson groups the liver with abdominal digestive glands."},
+{id:"digestive",name:"Digestive tract glands",group:"Abdomen",kind:"Exocrine",x:224,y:325,views:["female","male"],location:"Within the lining of parts of the digestive tract, including the stomach and intestines.",secretion:"Examples include stomach acid, digestive substances, and protective mucus.",function:"Help digest food and protect the lining of the digestive tract."},
+{id:"sweat",name:"Sweat glands",group:"Skin",kind:"Exocrine",x:280,y:220,views:["female","male"],location:"Distributed throughout the skin. Eccrine glands are widespread; apocrine glands occur in particular body regions.",secretion:"Sweat.",function:"Eccrine sweat helps cool the body. Sweat also contributes to the skin’s surface environment."},
+{id:"sebaceous",name:"Sebaceous glands",group:"Skin",kind:"Exocrine",x:119,y:160,views:["female","male"],location:"Usually associated with hair follicles in the skin.",secretion:"Sebum, an oily substance.",function:"Lubricates and helps protect the skin and hair."},
+{id:"ovaries",name:"Ovaries",group:"Reproductive glands",kind:"Endocrine",x:187,y:371,views:["female"],location:"In the pelvic cavity, one on each side of the uterus.",secretion:"Estrogen and progesterone.",function:"Help regulate the menstrual cycle, reproductive development, and support changes associated with the reproductive cycle."},
+{id:"skenes",name:"Skene’s glands",group:"Reproductive glands",kind:"Exocrine",x:200,y:414,views:["female"],location:"Small glands near the opening of the urethra.",secretion:"Fluid.",function:"The lesson identifies these glands as releasing fluid that contributes to lubrication."},
+{id:"testes",name:"Testes",group:"Reproductive glands",kind:"Mixed: endocrine and exocrine",x:200,y:470,views:["male"],location:"In the scrotum, outside the pelvic cavity.",secretion:"Testosterone; sperm cells are also produced in the testes.",function:"Testosterone supports male reproductive development and function. Sperm are the reproductive cells."},
+{id:"prostate",name:"Prostate gland",group:"Reproductive glands",kind:"Exocrine",x:200,y:412,views:["male"],location:"Below the urinary bladder, surrounding the upper part of the urethra.",secretion:"Fluid that contributes to semen.",function:"Adds fluid to semen, helping support sperm."},
+{id:"seminal",name:"Seminal vesicles",group:"Reproductive glands",kind:"Exocrine",x:218,y:397,views:["male"],location:"Behind the urinary bladder.",secretion:"Fluid that forms a substantial part of semen.",function:"Adds nutrient-containing fluid to semen to support sperm."}
+];
+let currentView="female",selected=null;
+const directory=document.getElementById("directory"),layer=document.getElementById("glandLayer"),detail=document.getElementById("detail"),figure=document.getElementById("figure");
+function visible(){return glands.filter(g=>g.views.includes(currentView))}
+function drawMap(){
+ layer.innerHTML="";
+ visible().forEach(g=>{
+  const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+  c.setAttribute("cx",g.x);c.setAttribute("cy",g.y);c.setAttribute("r",selected===g.id?9:6);
+  c.setAttribute("class","gland-dot"+(selected===g.id?" selected":""));
+  c.setAttribute("tabindex","0");c.setAttribute("role","button");c.setAttribute("aria-label",g.name);
+  c.addEventListener("click",()=>selectGland(g.id));c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectGland(g.id)}});
+  layer.appendChild(c);
+ });
+ // Numbered HTML markers are placed over the schematic SVG using matching viewBox coordinates.
+ figure.querySelectorAll(".marker").forEach(x=>x.remove());
+ visible().forEach((g,i)=>{
+  const b=document.createElement("button");b.className="marker"+(selected===g.id?" selected":"");b.textContent=i+1;b.title=g.name;
+  b.style.left=(g.x/400*100)+"%";b.style.top=(g.y/590*100)+"%";b.addEventListener("click",()=>selectGland(g.id));figure.appendChild(b);
+ });
+}
+function drawDirectory(filter=""){
+ directory.innerHTML="";
+ const groups=[...new Set(visible().map(g=>g.group))];
+ groups.forEach(group=>{
+  const label=document.createElement("div");label.className="group-label";label.textContent=group;directory.appendChild(label);
+  const list=document.createElement("div");list.className="gland-list";
+  visible().filter(g=>g.group===group&&g.name.toLowerCase().includes(filter.toLowerCase())).forEach(g=>{
+   const b=document.createElement("button");b.className="gland-btn"+(selected===g.id?" active":"");
+   const n=document.createElement("span");n.className="num";n.textContent=visible().indexOf(g)+1;
+   const t=document.createElement("span");t.textContent=g.name;b.append(n,t);b.addEventListener("click",()=>selectGland(g.id));list.appendChild(b);
+  });
+  if(list.children.length)directory.appendChild(list);
+ });
+}
+function showDetail(g){
+ detail.innerHTML=`<div class="detail-top"><div class="detail-number">${visible().indexOf(g)+1}</div><div><p class="detail-title">${g.name}</p><span class="tag">${g.kind}</span></div></div>
+ <div class="detail-section"><h3>Location — Where is it?</h3><p>${g.location}</p></div>
+ <div class="detail-section"><h3>Secretion — What does it release?</h3><p>${g.secretion}</p></div>
+ <div class="detail-section"><h3>Function — What does it do?</h3><p>${g.function}</p></div>`;
+}
+function selectGland(id){const g=visible().find(x=>x.id===id);if(!g)return;selected=id;drawMap();drawDirectory(document.getElementById("search").value);showDetail(g)}
+function overview(){selected=null;drawMap();drawDirectory(document.getElementById("search").value);detail.innerHTML='<h2>Gland information</h2><p class="empty">Select a marker on the body map or a gland from the directory to explore its location, secretion, and function.</p>'}
+document.getElementById("enter").onclick=()=>{document.getElementById("intro").style.display="none";document.getElementById("app").style.display="block";drawMap();drawDirectory()};
+document.getElementById("overview").onclick=overview;
+document.getElementById("home").onclick=()=>{document.getElementById("app").style.display="none";document.getElementById("intro").style.display="grid"};
+document.getElementById("search").addEventListener("input",e=>drawDirectory(e.target.value));
+document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{currentView=b.dataset.view;document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===b));overview()}));
+</script>
+</body>
+</html>
